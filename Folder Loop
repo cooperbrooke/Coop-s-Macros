@@ -1,0 +1,77 @@
+# This macro is used for updating policy loans on a quarterly basis. The macro takes a folder path and uses conditional statements to enter 
+# the correct file to pull the data corresponding to the corrrect category / Business Unit. It is able to handle missing files/ tabs
+# as all instances of such get appended to an array that is displayed at the end. Any questions regarding the macro may be directed to
+# Cooper_Brooke@Manulife.com (or scbrooke@uwaterloo.ca)
+
+Sub Update()
+
+Dim FileName As String
+Dim fOPath As String
+Dim ZeroSum As Long
+Dim EightSum As Long
+Dim TotalSum As Long
+Dim FullFileName As String
+Dim Missing() As String
+Dim x As Integer
+Dim lrow As Integer
+
+x = 0
+lrow = Range("K3")
+
+fOPath = Sheets("By BU").Range("E1").Value
+
+Application.DisplayAlerts = False
+
+For i = 10 To lrow
+
+    If Range("D" & i).Value <> "" Then
+    FileName = "Base_" & Range("K2") & Range("K1") & "_Additional Info_" & Range("D" & i) & ".xlsx"
+    FullFileName = fOPath & FileName
+    exists = FileExists(FullFileName)
+    If exists = True Then
+    Workbooks.Open fOPath & FileName, False, True
+    TabExists = SheetExists("Policy loans and Reins PfADs")
+    
+    If TabExists = True Then
+    Sheets("Policy loans and Reins PfADs").Select
+    ZeroSum = Application.Sum(Range(Cells(9, 4), Cells(9, 7)))
+    EightSum = Application.Sum(Range(Cells(10, 4), Cells(10, 7)))
+    TotalSum = ZeroSum + EightSum
+    ActiveWorkbook.Close
+    Sheets("By BU").Range("F" & i).Value = ZeroSum
+    Sheets("By BU").Range("G" & i).Value = EightSum
+    Sheets("By BU").Range("H" & i).Value = TotalSum
+    
+    Else
+    
+    If Right(Range("D" & i), 3) <> "Div" And Range("D" & i) <> "" Then
+    ReDim Preserve Missing(x)
+    Missing(x) = Range("D" & i)
+    x = x + 1
+    End If
+    
+    ActiveWorkbook.Close
+    Sheets("By BU").Range("F" & i).Value = ""
+    Sheets("By BU").Range("G" & i).Value = ""
+    Sheets("By BU").Range("H" & i).Value = ""
+    End If
+    
+    Else
+    
+    If Right(Range("D" & i), 3) <> "Div" Then
+    ReDim Preserve Missing(x)
+    Missing(x) = Range("D" & i)
+    x = x + 1
+    End If
+    
+    Sheets("By BU").Range("F" & i).Value = ""
+    Sheets("By BU").Range("G" & i).Value = ""
+    Sheets("By BU").Range("H" & i).Value = ""
+    End If
+    End If
+    Next
+    msgString = Join(Missing, vbCr)
+
+MsgBox "Missing files are: " & vbCr & msgString
+
+End Sub
