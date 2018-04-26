@@ -1,6 +1,7 @@
 # This macro is used for updating policy loans on a quarterly basis. The macro takes a folder path and uses conditional statements to enter 
 # the correct file to pull the data corresponding to the corrrect category / Business Unit. It is able to handle missing files/ tabs
-# as all instances of such get appended to an array that is displayed at the end. Any questions regarding the macro may be directed to
+# as all instances of such get appended to an array that is displayed at the end. In addition, such files will be colour coded based on 
+# whether the entire file is missing or if just the tab is missing. Any questions regarding the macro may be directed to
 # Cooper_Brooke@Manulife.com (or scbrooke@uwaterloo.ca)
 
 Sub Update()
@@ -21,6 +22,8 @@ lrow = Range("K3")
 fOPath = Sheets("By BU").Range("E1").Value
 
 Application.DisplayAlerts = False
+
+Range(Cells(10, 4), Cells(lrow, 4)).Interior.ColorIndex = 0
 
 For i = 10 To lrow
 
@@ -44,13 +47,15 @@ For i = 10 To lrow
     
     Else
     
-    If Right(Range("D" & i), 3) <> "Div" And Range("D" & i) <> "" Then
+    If Right(Range("D" & i), 3) <> "Div" Then
+    ActiveWorkbook.Close
+    Range("D" & i).Interior.ColorIndex = 6
     ReDim Preserve Missing(x)
     Missing(x) = Range("D" & i)
     x = x + 1
     End If
     
-    ActiveWorkbook.Close
+    
     Sheets("By BU").Range("F" & i).Value = ""
     Sheets("By BU").Range("G" & i).Value = ""
     Sheets("By BU").Range("H" & i).Value = ""
@@ -59,6 +64,7 @@ For i = 10 To lrow
     Else
     
     If Right(Range("D" & i), 3) <> "Div" Then
+    Range("D" & i).Interior.ColorIndex = 3
     ReDim Preserve Missing(x)
     Missing(x) = Range("D" & i)
     x = x + 1
